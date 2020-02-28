@@ -3,6 +3,8 @@ title: 'LAB 2: Visualization (PCA/FDA)'
 author: "Lluís A. Belanche, translated to R Markdown by Marta Arias"
 date: "February 2020"
 output:
+  html_document:
+    df_print: paged
   html_notebook: default
   pdf_document: default
 ---
@@ -58,7 +60,7 @@ mean.2 <- -mean.1    # notice the "-"
 X.green <- mvrnorm(N, mu=mean.2, Sigma=Sigma)
 ```
 
-```
+```{r}
 par(pty="s")
 plot(c(X.red[,1],X.green[,1]), c(X.red[,2],X.green[,2]), 
      xlim=c(-6,6),ylim=c(-6,6),
@@ -119,7 +121,7 @@ myLDA$scaling
 
 So we are projecting the data into the direction that maximizes (linear) separability:
 
-$projection(X) = X1*myLDA$scaling[1] + X2*myLDA$scaling[2]$
+$projection(X) = X1*myLDA\$scaling[1] + X2*myLDA\$scaling[2]$
 
 #### Now we compute PCA:
   

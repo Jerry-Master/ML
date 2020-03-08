@@ -3,9 +3,11 @@ title: 'LAB 3: Bias/Variance -- Exercise'
 author: "Lluís A. Belanche, translated to R Markdown by Marta Arias"
 date: "February 2020"
 output:
+  html_document:
+    df_print: paged
   html_notebook: default
   pdf_document: default
-editor_options: 
+editor_options:
   chunk_output_type: inline
 ---
 
@@ -51,3 +53,38 @@ To this end, you must generate many (thousands?) datasets of size $N$, choose on
 
 The models are going to be polynomials of degrees of your choice (I suggest 1,2,3,4,5,8).
 
+### Models
+
+Recordem que en tot l'exercici suposarem (de fet ho sabem) que els errors segueixen una distribució normal.
+
+Primer generem dades per no treballar amb la mostra de mida 150:
+
+```{r}
+N <- 15
+x1 <- runif(N,0,15)     # generate the x according to a uniform distribution p(x)
+t1 <- f(x1) + rnorm(N, sd=0.1) # generate the t according to a gaussian conditional distribution p(t|x)
+```
+
+
+#### Polinomi grau 2:
+
+Ara suposem que $t_n \sim {\sf N}(y(x_n; \beta), \sigma)$ on $y(x_n; \beta)$ és un polinomi de grau 2.
+
+```{r}
+# generem un model que prediu amb un polinomi de grau 2:
+poly_2 <- lm(t1 ~ poly(x1, 2, raw=TRUE))
+# ho veiem:
+plot(data.frame(x1, t1), ylab="f(x)") # punts de les dades
+curve(f, type="l", col="blue", add=TRUE) # veritat revelada
+p <- as.function(polynomial(coef(poly_2)))
+curve(p, col="red", add=TRUE)
+```
+
+Ara calculem la suma de la variància i el biaix (MSE).
+
+```{r}
+mse = function(mod) mean(mod$residuals^2)
+mse(poly_2)
+```
+
+comentari (jordi): no entenc com s'ha d'estimar la var() i el bias^2 per el model, però un cop fet per un es pot passar a tots ;)

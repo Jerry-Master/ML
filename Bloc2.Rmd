@@ -1,0 +1,91 @@
+---
+title: "Musk dataset"
+output: html_notebook
+---
+
+
+
+```{r}
+library("MASS")
+```
+
+
+```{r}
+set.seed(447)
+dd <- read.csv("clean2.data", header = F)
+names(dd) <- c("molecule_name", "conformation_name", paste("f", 1:166, sep = ""), "class")
+head(dd)
+```
+
+
+```{r}
+summary(dd)
+boxplot(dd[,3:168])
+```
+
+### Hacemos clasificacion logisitca
+
+```{r}
+ds <- data.frame(scale(dd[,3:168], scale = T))
+ds$class <- dd$class
+n <- nrow(ds)
+ds <- ds[sample(n),]
+idx <- cut(1:n, breaks = 3, labels=F)
+train <- ds[idx == 1 | idx == 2,]
+test <- ds[idx == 3,]
+```
+
+```{r}
+model1 <- glm(class~., data = train, family = binomial("logit"))
+model2 <- glm(class~., data = train, family = binomial("probit"))
+model3 <- glm(class~., data = train, family = binomial("cloglog"))
+
+(AIC1 <- summary(model1)$aic)
+(AIC2 <- summary(model2)$aic)
+(AIC3 <- summary(model3)$aic)
+```
+Nos quedamos con el logit
+
+```{r}
+(fda <- lda(class~., data = train))
+
+pca <- princomp(train[,-167])
+screeplot(pca)
+summary(pca)
+```
+
+Pillamos 20
+
+# PCA y FDA
+
+```{r}
+dd.pca <- data.frame(pca$scores[,1:20])
+dd.pca$class <- train$class
+dd.fda <- data.frame(as.matrix(train[,-167])%*%as.matrix(fda$scaling))
+dd.fda$class <- train$class
+
+aic.pca <- c()
+
+for (i in 1:50) {
+  aic.pca <- c(aic.pca, summary(glm(class~., data = data.frame(pca$scores[,1:i], class = train$class), family = binomial("logit")))$aic)
+}
+
+min.local <- which.min(aic.pca)
+
+
+dd.pca <- data.frame(pca$scores[,1:min.local], class = train$class)
+mod.pca <- glm(class~., data = dd.pca, family = binomial("logit"))
+summary(mod.pca)
+
+mod.fda <- glm(class~., data = dd.fda, family = binomial("logit"))
+summary(mod.fda)
+```
+
+# Rutina AIC
+
+```{r}
+sp1 <- step(model1)
+
+sp.pca <- step(mod.pca)
+```
+
